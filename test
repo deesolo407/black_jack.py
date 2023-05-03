@@ -1,0 +1,126 @@
+import random
+
+# Define the suits and card values
+suits = ['♠', '♡', '♢', '♣']
+values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
+
+# Define the card class
+class Card:
+    def __init__(self, suit, value):
+        self.suit = suit
+        self.value = value
+
+    def __str__(self):
+        if self.value == '10':
+            return f"┌─────┐\n|{self.value}{self.suit} |\n|     |\n|{self.suit}{self.value} |\n└─────┘"
+        else:
+            return f"┌─────┐\n|{self.value}{self.suit}  |\n|     |\n|  {self.suit}{self.value}|\n└─────┘"
+
+# Define the deck class
+class Deck:
+    def __init__(self):
+        self.cards = []
+        for suit in suits:
+            for value in values:
+                self.cards.append(Card(suit, value))
+    
+    def shuffle(self):
+        random.shuffle(self.cards)
+    
+    def deal(self):
+        return self.cards.pop()
+
+# Define the player class
+class Player:
+    def __init__(self, name):
+        self.name = name
+        self.hand = []
+
+    def draw_card(self, deck):
+        card = deck.deal()
+        self.hand.append(card)
+
+    def show_hand(self, hide_first_card=False):
+        if hide_first_card:
+            print(f"{self.name}'s hand:")
+            print("┌─────┐  ┌─────┐")
+            print("│░░░░░│  │░░░░░│")
+            print("│░░░░░│  │░░░░░│")
+            print("│░░░░░│  │░░░░░│")
+            print("└─────┘  └─────┘")
+        else:
+            print(f"{self.name}'s hand:")
+            for card in self.hand:
+                print(card)
+
+    def get_hand_value(self):
+        hand_value = 0
+        num_aces = 0
+        for card in self.hand:
+            if card.value in ['J', 'Q', 'K']:
+                hand_value += 10
+            elif card.value == 'A':
+                num_aces += 1
+                hand_value += 11
+            else:
+                hand_value += int(card.value)
+
+        while num_aces > 0 and hand_value > 21:
+            hand_value -= 10
+            num_aces -= 1
+
+        return hand_value
+
+# Define the game class
+class Blackjack:
+    def __init__(self):
+        self.deck = Deck()
+        self.deck.shuffle()
+        self.player = Player("Player")
+        self.dealer = Player("Dealer")
+
+    def initial_deal(self):
+        for i in range(2):
+            self.player.draw_card(self.deck)
+            self.dealer.draw_card(self.deck)
+
+    def player_turn(self):
+        while self.player.get_hand_value() < 21:
+            self.player.show_hand()
+            action = input("Hit, stand, or split? (h/s/sp): ")
+    def show_final_hands(self):
+        print("Final hands:")
+        self.player.show_hand()
+        self.dealer.show_hand()
+
+    def determine_winner(self):
+        player_hand_value = self.player.get_hand_value()
+        dealer_hand_value = self.dealer.get_hand_value()
+
+        if player_hand_value > 21:
+            print("Player busts! Dealer wins.")
+        elif dealer_hand_value > 21:
+            print("Dealer busts! Player wins.")
+        elif player_hand_value == dealer_hand_value:
+            print("Push! It's a tie.")
+        elif player_hand_value > dealer_hand_value:
+            print("Player wins!")
+        else:
+            print("Dealer wins!")
+
+    def play(self):
+        print("Welcome to Blackjack 2!")
+        print("======================")
+        self.initial_deal()
+        print("Dealer's hand:")
+        self.dealer.show_hand(hide_first_card=True)
+        self.player_turn()
+        self.dealer_turn()
+        print("Dealer's hand:")
+        self.dealer.show_hand()
+        self.show_final_hands()
+        self.determine_winner()
+
+# Run the game
+game = Blackjack()
+game.play()
